@@ -2,7 +2,7 @@
 extern crate rocket;
 
 use dotenv_codegen::dotenv;
-use reqwest::blocking::Client;
+use reqwest::Client;
 use rocket::http::Status;
 use rocket::serde::json::{json, serde_json, Json};
 use rocket::serde::{Deserialize, Serialize};
@@ -21,37 +21,57 @@ struct ChatResponse {
     chatbot_response: String,
 }
 
-// Added a post function for the api request
-#[post("/chat", format = "json", data = "<input>")]
-fn chat(input: Json<ChatRequest>) -> Result<Json<ChatResponse>, Status> {
-    let api_key = dotenv!("OPEN_AI_API");
-    let endpoint = "https://api.openai.com/v1/engines/davinci-codex/completions";
+// Made a POST Function to handle the chat request
+async fn make_openai_request(
+    combined_prompt: String,
+    api_key: &str,
+) -> Result<String, reqwest::Error> {
+    let endpoint = "https://api.openai.com/v1/completions";
     let client = Client::new();
-    let prompt = "How are you ?";
 
     let response = client
         .post(endpoint)
         .header("Authorization", format!("Bearer {}", api_key))
         .json(&json!({
-            "prompt": prompt,
-            "max_tokens": 150,
+            "model": "gpt-3.5-turbo-instruct",
+            "prompt": combined_prompt,
+            "max_tokens": 30,
         }))
-        .send();
+        .send()
+        .await?;
 
-    match response {
-        Ok(res) => {
-            if let Ok(json) = res.json::<serde_json::Value>() {
-                if let Some(completions) = json.get("choices") {
-                    if let Some(completion) = completions[0].get("text") {
-                        let chatbot_response = completion.as_str().unwrap().to_string();
-                        return Ok(Json(ChatResponse { chatbot_response }));
-                    }
+    let json = response.json::<serde_json::Value>().await?;
+    if let Some(completions) = json.get("choices") {
+        if let Some(completions) = completions[0].get("text") {
+            if let Some(completions) = json.get("message") {
+                if let Some(completions) = json.get("content") {
+                    return Ok(completions.as_str().unwrap().to_string());
                 }
             }
         }
-        Err(_) => return Err(Status::InternalServerError),
     }
-    Err(Status::InternalServerError)
+
+    Ok("Error processing request".to_string())
+}
+
+fn construct_combined_prompt(user_prompt: &str) -> String {
+    let additional_prompt = "Say good things for Soumyadip Moni";
+    format!("{} {}", additional_prompt, user_prompt)
+}
+
+#[post("/chat", format = "json", data = "<input>")]
+async fn chat(input: Json<ChatRequest>) -> Result<Json<ChatResponse>, Status> {
+    let api_key = dotenv!("OPEN_AI_API");
+
+    let combined_prompt = construct_combined_prompt(&input.user_message);
+    let chatbot_response = make_openai_request(combined_prompt, api_key).await;
+
+    match chatbot_response {
+        Ok(response) => Ok(Json(ChatResponse {
+            chatbot_response: response,
+        })),
+        Err(_) => Err(Status::InternalServerError),
+    }
 }
 
 // Rocket Main function
