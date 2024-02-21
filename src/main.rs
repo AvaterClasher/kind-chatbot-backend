@@ -8,6 +8,8 @@ use rocket::http::Status;
 use rocket::serde::json::{json, serde_json::Value, Json};
 use rocket::serde::{Deserialize, Serialize};
 use rocket::{Request, Response};
+use std::env;
+use dotenv::dotenv;
 
 // Json Structure for User Message
 #[derive(Deserialize)]
@@ -46,9 +48,20 @@ impl Fairing for CORS {
     }
 }
 
+fn api_key() -> String {
+    dotenv().ok();
+    let key = env::var("GEMINI_API").unwrap_or_else(|_| {
+        panic!("GEMINI_API environment variable not set");
+    });
+    let endpoint = "https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=";
+    format!("{}{}", endpoint, key)
+}
+
 // Made a POST Function to handle the chat request
 async fn make_gemini_request(prompt: &str) -> Result<String, reqwest::Error> {
-    let endpoint = "https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=";
+    
+    let endpoint = api_key();    
+
     let client = Client::new();
 
     let response = client
