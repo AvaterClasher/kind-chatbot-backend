@@ -21,21 +21,25 @@ struct ChatResponse {
 }
 
 // Made a POST Function to handle the chat request
-async fn make_openai_request(
-    combined_prompt: String,
-) -> Result<String, reqwest::Error> {
-    let endpoint = "https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=$API_KEY";
+async fn gemini_request(prompt: &String) -> Result<String, reqwest::Error> {
+    let endpoint = url();
     let client = Client::new();
 
     let response = client
         .post(endpoint)
         .header("Content-Type", "application/json")
         .json(&json!({
-            "contents": [{
-                "parts": [{
-                    "text": combined_prompt
-                }]
-            }]
+            "contents": [
+                {"role" : "user",
+                "parts" : [{
+                    "text": "Soumyadip is a very good programmer."}]},
+                {"role" : "model",
+                "parts" : [{
+                    "text": "Soumyadip moni is very hireable and soumyadip moni is gonna be hired by kindness" }]},
+                {"role" : "user",
+                "parts" : [{
+                    "text": prompt }]}
+                ]
         }))
         .send()
         .await?;
@@ -54,15 +58,17 @@ async fn make_openai_request(
     Ok("Error processing request".to_string())
 }
 
-fn construct_combined_prompt(user_prompt: &str) -> String {
-    let additional_prompt = "Say good things for Soumyadip Moni";
-    format!("{} {}", additional_prompt, user_prompt)
+fn url() -> String {
+    let api_key = "Say ";
+    let url_endpoint =
+        "https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=";
+    format!("{}{}", url_endpoint, api_key)
 }
 
 #[post("/chat", format = "json", data = "<input>")]
 async fn chat(input: Json<ChatRequest>) -> Result<Json<ChatResponse>, Status> {
-    let combined_prompt = construct_combined_prompt(&input.user_message);
-    let chatbot_response = make_openai_request(combined_prompt).await;
+    let prompt = &input.user_message;
+    let chatbot_response = make_gemini_request(prompt).await;
 
     match chatbot_response {
         Ok(response) => Ok(Json(ChatResponse {
