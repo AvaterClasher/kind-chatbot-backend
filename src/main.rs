@@ -3,7 +3,7 @@ extern crate rocket;
 
 use reqwest::Client;
 use rocket::http::Status;
-use rocket::serde::json::{json, serde_json, Json};
+use rocket::serde::json::{json, serde_json::Value, Json};
 use rocket::serde::{Deserialize, Serialize};
 
 // Json Structure for User Message
@@ -21,8 +21,8 @@ struct ChatResponse {
 }
 
 // Made a POST Function to handle the chat request
-async fn gemini_request(prompt: &String) -> Result<String, reqwest::Error> {
-    let endpoint = url();
+async fn make_gemini_request(prompt: &str) -> Result<String, reqwest::Error> {
+    let endpoint = "https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=";
     let client = Client::new();
 
     let response = client
@@ -44,26 +44,29 @@ async fn gemini_request(prompt: &String) -> Result<String, reqwest::Error> {
         .send()
         .await?;
 
-    let json = response.json::<serde_json::Value>().await?;
-    if let Some(completions) = json.get("choices") {
-        if let Some(completions) = completions[0].get("text") {
-            if let Some(completions) = json.get("message") {
-                if let Some(completions) = json.get("content") {
-                    return Ok(completions.as_str().unwrap().to_string());
-                }
-            }
-        }
-    }
+    let body = response.text().await?;
+    println!("Response body: {}", body);
+
+    // let json: Value = response.json().await?;
+    // if let Some(candidates) = json.get("candidates") {
+    //     if let Some(candidate) = candidates[0].get("content") {
+    //         if let Some(parts) = candidate.get("parts") {
+    //             if let Some(text) = parts[0].get("text") {
+    //                 return Ok(text.as_str().unwrap().to_string());
+    //             }
+    //         }
+    //     }
+    // }
 
     Ok("Error processing request".to_string())
 }
 
-fn url() -> String {
-    let api_key = "Say ";
-    let url_endpoint =
-        "https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=";
-    format!("{}{}", url_endpoint, api_key)
-}
+// fn url() -> String {
+//     let api_key = "";
+//     let url_endpoint =
+//         "https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=";
+//     format!("{}", url_endpoint)
+// }
 
 #[post("/chat", format = "json", data = "<input>")]
 async fn chat(input: Json<ChatRequest>) -> Result<Json<ChatResponse>, Status> {
