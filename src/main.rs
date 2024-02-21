@@ -1,7 +1,6 @@
 #[macro_use]
 extern crate rocket;
 
-use dotenv_codegen::dotenv;
 use reqwest::Client;
 use rocket::http::Status;
 use rocket::serde::json::{json, serde_json, Json};
@@ -24,18 +23,19 @@ struct ChatResponse {
 // Made a POST Function to handle the chat request
 async fn make_openai_request(
     combined_prompt: String,
-    api_key: &str,
 ) -> Result<String, reqwest::Error> {
-    let endpoint = "https://api.openai.com/v1/completions";
+    let endpoint = "https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=$API_KEY";
     let client = Client::new();
 
     let response = client
         .post(endpoint)
-        .header("Authorization", format!("Bearer {}", api_key))
+        .header("Content-Type", "application/json")
         .json(&json!({
-            "model": "gpt-3.5-turbo-instruct",
-            "prompt": combined_prompt,
-            "max_tokens": 30,
+            "contents": [{
+                "parts": [{
+                    "text": combined_prompt
+                }]
+            }]
         }))
         .send()
         .await?;
@@ -61,10 +61,8 @@ fn construct_combined_prompt(user_prompt: &str) -> String {
 
 #[post("/chat", format = "json", data = "<input>")]
 async fn chat(input: Json<ChatRequest>) -> Result<Json<ChatResponse>, Status> {
-    let api_key = dotenv!("OPEN_AI_API");
-
     let combined_prompt = construct_combined_prompt(&input.user_message);
-    let chatbot_response = make_openai_request(combined_prompt, api_key).await;
+    let chatbot_response = make_openai_request(combined_prompt).await;
 
     match chatbot_response {
         Ok(response) => Ok(Json(ChatResponse {
