@@ -23,7 +23,9 @@
 
 You will need to use the environment variables defined in [`.env.example`](.env.example) to run Rocket server. It's recommended you just copy the variable to a `.env` file.
 
-> Note: You should not commit your `.env` file or it will expose secrets that will allow others to control access to your various OpenAI and authentication provider accounts.
+You can get the Gemini API Key [here](https://aistudio.google.com/app/apikey).
+
+> Note: You should not commit your `.env` file or it will expose secrets that will allow others to control access to your various Gemini and authentication provider accounts.
 
 -   Install Rust:
     -   For Linux : `curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh`
