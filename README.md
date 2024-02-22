@@ -7,10 +7,10 @@
 </p>
 
 <p align="center">
-  <a href="#technologies-used"><strong>Features</strong></a> ·
-  <a href="#running-locally"><strong>Running locally</strong></a> ·
-  <a href="#api"><strong>Author</strong></a>
-  <a href="#authors"><strong>Author</strong></a>
+  <a href="#technologies-used"><strong>Features</strong></a>.
+  <a href="#running-locally"><strong>Running locally</strong></a>.
+  <a href="#api"><strong>Author</strong></a>.
+  <a href="#authors"><strong>Author</strong></a>.
 </p>
 
 ## Technologies Used
@@ -38,12 +38,12 @@ Your server should now be running on [localhost:8000/chat](http://localhost:8000
 ## API
 
 REST API :
+
 ```
 curl -X POST -H "Content-Type: application/json" -d '{
     "user_message": "{PROMPT_HERE}"
 }' https://localhost:8000/chat
 ```
-
 
 ## Authors
 
