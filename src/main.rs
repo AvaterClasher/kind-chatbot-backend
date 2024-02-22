@@ -38,12 +38,12 @@ impl Fairing for CORS {
     }
 
     async fn on_response<'r>(&self, _request: &'r Request<'_>, response: &mut Response<'r>) {
-        response.set_header(Header::new("Access-Control-Allow-Origin", "*"));
+        response.set_header(Header::new("Access-Control-Allow-Origin", "http://localhost:3000"));
         response.set_header(Header::new(
             "Access-Control-Allow-Methods",
             "POST",
         ));
-        response.set_header(Header::new("Access-Control-Allow-Headers", "https://generativelanguage.googleapis.com"));
+        response.set_header(Header::new("Access-Control-Allow-Headers", "Content-Type"));
         response.set_header(Header::new("Access-Control-Allow-Credentials", "true"));
     }
 }
@@ -110,8 +110,13 @@ async fn chat(input: Json<ChatRequest>) -> Result<Json<ChatResponse>, Status> {
     }
 }
 
+#[options("/chat")]
+fn options() -> Status {
+    Status::Ok
+}
+
 // Rocket Main function
 #[launch]
 fn rocket() -> _ {
-    rocket::build().mount("/", routes![chat]).attach(CORS)
+    rocket::build().mount("/", routes![chat,options]).attach(CORS)
 }
