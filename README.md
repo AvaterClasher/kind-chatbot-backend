@@ -1,3 +1,5 @@
+<!-- @format -->
+
 <h1 align="center">Kind Chatbot</h1>
 
 <p align="center">
@@ -7,6 +9,7 @@
 <p align="center">
   <a href="#technologies-used"><strong>Features</strong></a> ·
   <a href="#running-locally"><strong>Running locally</strong></a> ·
+  <a href="#api"><strong>Author</strong></a>
   <a href="#authors"><strong>Author</strong></a>
 </p>
 
@@ -28,7 +31,17 @@ You will need to use the environment variables defined in [`.env.example`](.env.
 -   Set the Current Rust toolchain to nighly to build the server: `rustup default nightly`
 -   Then Just Run the Server using: `cargo run`
 
-Your server should now be running on [localhost:8000/chat](http://localhost:3000/chat).
+Your server should now be running on [localhost:8000/chat](http://localhost:8000/chat).
+
+## API
+
+REST API :
+```
+curl -X POST -H "Content-Type: application/json" -d '{
+    "user_message": "{PROMPT_HERE}"
+}' https://localhost:8000/chat
+```
+
 
 ## Authors
 
