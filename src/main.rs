@@ -41,8 +41,9 @@ impl Fairing for CORS {
     // Function to modify the cors headers
     async fn on_response<'r>(&self, _request: &'r Request<'_>, response: &mut Response<'r>) {
         // response.set_header(Header::new("Access-Control-Allow-Origin", "http://localhost:3000",));
-        response.set_header(Header::new("Access-Control-Allow-Origin", "https://kind-chatbot-frontend-2.vercel.app"));
+        // response.set_header(Header::new("Access-Control-Allow-Origin", "https://kind-chatbot-frontend-2.vercel.app"));
         // response.set_header(Header::new("Access-Control-Allow-Origin", "https://kind-chatbot-frontend-1.vercel.app"));
+        response.set_header(Header::new("Access-Control-Allow-Origin", "*"));
         response.set_header(Header::new(
             "Access-Control-Allow-Methods",
             "POST",
@@ -100,6 +101,8 @@ async fn make_gemini_request(prompt: &str) -> Result<String, reqwest::Error> {
             }
         }
     }
+
+    println!("{}",json);
 
     Ok("Error processing request".to_string())
 }
