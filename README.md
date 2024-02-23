@@ -9,7 +9,7 @@
 <p align="center">
   <a href="#technologies-used"><strong>Features</strong></a>.
   <a href="#running-locally"><strong>Running locally</strong></a>.
-  <a href="#api"><strong>Author</strong></a>.
+  <a href="#api"><strong>API</strong></a>.
   <a href="#authors"><strong>Author</strong></a>.
 </p>
 
