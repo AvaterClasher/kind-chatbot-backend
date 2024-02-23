@@ -13,6 +13,14 @@
   <a href="#authors"><strong>Author</strong></a>.
 </p>
 
+## The Server is hosted on Shuttle at 
+
+`https://kindbot-backend.shuttleapp.rs`
+
+> Shuttle server's are hosted in London, UK. And due to some weird UK law the gemini api's is currently unavailable in the UK.
+> So the Server currently returns **Cant process request**.
+
+
 ## Technologies Used
 
 -   [Rocket 🚀](https://rocket.rs/) as the server framework
