@@ -1,10 +1,23 @@
-FROM rust:1 as builder
-WORKDIR /app
+FROM rust:1.42.0 as builder
+ENV NAME=kind-chatbot
+
+# First build a dummy project with our dependencies to cache them in Docker
+WORKDIR /usr/src
+RUN cargo new --bin ${NAME}
+WORKDIR /usr/src/${NAME}
+COPY ./Cargo.lock ./Cargo.lock
+COPY ./Cargo.toml ./Cargo.toml
+RUN cargo build --release
+RUN rm src/*.rs
+
+# Now copy the sources and do the real build
 COPY . .
-RUN cargo install --path .
-FROM ubuntu:latest as runner
-COPY --from=builder /usr/local/cargo/bin/kind-chatbot /usr/local/bin/kind-chatbot
-RUN apt-get update && apt install -y openssl libssl-dev
-ENV ROCKET_ADDRESS=0.0.0.0
-EXPOSE 8000
-CMD ["kind-chatbot"]
+RUN cargo test
+RUN cargo build --release 
+
+# Second stage putting the build result into a debian jessie-slim image
+FROM debian:jessie-slim
+ENV NAME=kind-chatbot
+
+COPY --from=builder /usr/src/${NAME}/target/release/${NAME} /usr/local/bin/${NAME}
+CMD ${NAME}
