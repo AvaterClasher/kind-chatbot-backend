@@ -18,6 +18,6 @@ RUN cargo build --release
 # Second stage putting the build result into a debian jessie-slim image
 FROM debian:jessie-slim
 ENV NAME=kind-chatbot
-
+EXPOSE 8000
 COPY --from=builder /usr/src/${NAME}/target/release/${NAME} /usr/local/bin/${NAME}
 CMD ${NAME}
