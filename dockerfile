@@ -1,23 +1,30 @@
-FROM rust:1.42.0 as builder
-ENV NAME=kind-chatbot
+FROM rust as planner
+WORKDIR /build
+# We only pay the installation cost once,
+# it will be cached from the second build onwards
+# To ensure a reproducible build consider pinning
+# the cargo-chef version with `--version X.X.X`
+RUN cargo install cargo-chef
+COPY ./ ./
+RUN cargo chef prepare --recipe-path recipe.json
 
-# First build a dummy project with our dependencies to cache them in Docker
-WORKDIR /usr/src
-RUN cargo new --bin ${NAME}
-WORKDIR /usr/src/${NAME}
-COPY ./Cargo.lock ./Cargo.lock
-COPY ./Cargo.toml ./Cargo.toml
+FROM rust as cacher
+WORKDIR /build
+RUN cargo install cargo-chef
+COPY --from=planner /build/recipe.json recipe.json
+RUN cargo chef cook --release --recipe-path recipe.json
+
+FROM rust as builder
+WORKDIR /build
+COPY ./ ./
+# Copy over the cached dependencies
+COPY --from=cacher /build/target target
+COPY --from=cacher /usr/local/cargo /usr/local/cargo
 RUN cargo build --release
-RUN rm src/*.rs
 
-# Now copy the sources and do the real build
-COPY . .
-RUN cargo test
-RUN cargo build --release 
-
-# Second stage putting the build result into a debian jessie-slim image
-FROM debian:jessie-slim
-ENV NAME=kind-chatbot
+FROM rust as runtime
+WORKDIR /build
+ENV ROCKET_ADDRESS 0.0.0.0
 EXPOSE 8000
-COPY --from=builder /usr/src/${NAME}/target/release/${NAME} /usr/local/bin/${NAME}
-CMD ${NAME}
+COPY --from=builder /build/target/release/server /usr/local/bin
+CMD ["/usr/local/bin/server"]
