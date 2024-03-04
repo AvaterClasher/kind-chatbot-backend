@@ -1,23 +1,30 @@
-FROM rust:1-bookworm as builder
+FROM rust as planner
+WORKDIR /build
+# We only pay the installation cost once,
+# it will be cached from the second build onwards
+# To ensure a reproducible build consider pinning
+# the cargo-chef version with `--version X.X.X`
+RUN cargo install cargo-chef
+COPY ./ ./
+RUN cargo chef prepare --recipe-path recipe.json
 
-WORKDIR /usr/src/app
-COPY . .
-# Will build and cache the binary and dependent crates in release mode
-RUN --mount=type=cache,target=/usr/local/cargo,from=rust:latest,source=/usr/local/cargo \
-    --mount=type=cache,target=target \
-    cargo build --release && mv ./target/release/kind-chatbot ./kind-chatbot
+FROM rust as cacher
+WORKDIR /build
+RUN cargo install cargo-chef
+COPY --from=planner /build/recipe.json recipe.json
+RUN cargo chef cook --release --recipe-path recipe.json
 
-# Runtime image
-FROM debian:bookworm-slim
+FROM rust as builder
+WORKDIR /build
+COPY ./ ./
+# Copy over the cached dependencies
+COPY --from=cacher /build/target target
+COPY --from=cacher /usr/local/cargo /usr/local/cargo
+RUN cargo build --release
 
-# Run as "app" user
-RUN useradd -ms /bin/bash app
-
-USER app
-WORKDIR /app
-
-# Get compiled binaries from builder's cargo install directory
-COPY --from=builder /usr/src/app/kind-chatbot /app/kind-chatbot
-
-# Run the app
-CMD ./kind-chatbot
+FROM rust as runtime
+WORKDIR /build
+ENV ROCKET_ADDRESS 0.0.0.0
+EXPOSE 8000
+COPY --from=builder /build/target/release/kind-chatbot /usr/local/bin
+CMD ["/usr/local/bin/kind-chatbot"]
