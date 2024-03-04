@@ -26,5 +26,5 @@ FROM rust as runtime
 WORKDIR /build
 ENV ROCKET_ADDRESS 0.0.0.0
 EXPOSE 8000
-COPY --from=builder /build/target/release/server /usr/local/bin
+COPY --from=builder /build/target/release/kind-chatbot /usr/local/bin
 CMD ["/usr/local/bin/server"]
