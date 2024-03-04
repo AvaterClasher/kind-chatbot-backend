@@ -122,6 +122,11 @@ async fn chat(input: Json<ChatRequest>) -> Result<Json<ChatResponse>, Status> {
     }
 }
 
+#[get("/hello")]
+fn hello() -> String {
+    format!("Hello")
+}
+
 // Rocket handler for the preflight cors requests to the /post endpoint
 #[options("/chat")]
 fn options() -> Status {
