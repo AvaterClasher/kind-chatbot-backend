@@ -54,19 +54,19 @@ impl Fairing for CORS {
 }
 
 // Helper function to load the Gemini Key from the .env file
-// fn api_key() -> String {
-//     dotenv().ok();
-//     let key = env::var("GEMINI_API").unwrap_or_else(|_| {
-//         panic!("GEMINI_API environment variable not set");
-//     });
-//     let endpoint = "https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=";
-//     format!("{}{}", endpoint, key)
-// }
+ fn api_key() -> String {
+     dotenv().ok();
+     let key = env::var("GEMINI_API").unwrap_or_else(|_| {
+         panic!("GEMINI_API environment variable not set");
+     });
+     let endpoint = "https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=";
+     format!("{}{}", endpoint, key)
+ }
 
 // POST Function to handle the chat request
 async fn make_gemini_request(prompt: &str) -> Result<String, reqwest::Error> {
     
-    let endpoint = "https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=AIzaSyCuncAKdFNwtpHkanWvujVCWJdklT9r-Tg";
+    let endpoint = "https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=";
 
     let client = Client::new();
 
