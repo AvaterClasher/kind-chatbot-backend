@@ -66,11 +66,7 @@ fn api_key() -> String {
 // POST Function to handle the chat request
 async fn make_gemini_request(prompt: &str) -> Result<String, reqwest::Error> {
     
-<<<<<<< HEAD
     let endpoint = api_key();
-=======
-    let endpoint = "https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=";
->>>>>>> 7a8f5df3f5f4c29b074df34a4783814acea8f329
 
     let client = Client::new();
 
