@@ -53,7 +53,7 @@ impl Fairing for CORS {
     }
 }
 
-Helper function to load the Gemini Key from the .env file
+// Helper function to load the Gemini Key from the .env file
 fn api_key() -> String {
     dotenv().ok();
     let key = env::var("GEMINI_API").unwrap_or_else(|_| {
@@ -66,7 +66,7 @@ fn api_key() -> String {
 // POST Function to handle the chat request
 async fn make_gemini_request(prompt: &str) -> Result<String, reqwest::Error> {
     
-    let endpoint = "https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=";
+    let endpoint = api_key();
 
     let client = Client::new();
 
@@ -120,6 +120,11 @@ async fn chat(input: Json<ChatRequest>) -> Result<Json<ChatResponse>, Status> {
         })),
         Err(_) => Err(Status::InternalServerError),
     }
+}
+
+#[get("/hello")]
+fn hello() -> String {
+    format!("Hello")
 }
 
 // Rocket handler for the preflight cors requests to the /post endpoint
