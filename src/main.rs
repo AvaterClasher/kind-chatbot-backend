@@ -1,6 +1,7 @@
 #[macro_use]
 extern crate rocket;
 
+use dotenv::dotenv;
 use reqwest::Client;
 use rocket::fairing::{Fairing, Info, Kind};
 use rocket::http::Header;
@@ -9,7 +10,6 @@ use rocket::serde::json::{json, serde_json::Value, Json};
 use rocket::serde::{Deserialize, Serialize};
 use rocket::{Request, Response};
 use std::env;
-use dotenv::dotenv;
 
 // Json Structure for User Message
 #[derive(Deserialize)]
@@ -44,10 +44,7 @@ impl Fairing for CORS {
         // response.set_header(Header::new("Access-Control-Allow-Origin", "https://kind-chatbot-frontend-2.vercel.app"));
         // response.set_header(Header::new("Access-Control-Allow-Origin", "https://kind-chatbot-frontend-1.vercel.app"));
         response.set_header(Header::new("Access-Control-Allow-Origin", "*"));
-        response.set_header(Header::new(
-            "Access-Control-Allow-Methods",
-            "POST",
-        ));
+        response.set_header(Header::new("Access-Control-Allow-Methods", "POST"));
         response.set_header(Header::new("Access-Control-Allow-Headers", "Content-Type"));
         response.set_header(Header::new("Access-Control-Allow-Credentials", "true"));
     }
@@ -59,13 +56,13 @@ fn api_key() -> String {
     let key = env::var("GEMINI_API").unwrap_or_else(|_| {
         panic!("GEMINI_API environment variable not set");
     });
-    let endpoint = "https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=";
+    let endpoint =
+        "https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=";
     format!("{}{}", endpoint, key)
 }
 
 // POST Function to handle the chat request
 async fn make_gemini_request(prompt: &str) -> Result<String, reqwest::Error> {
-    
     let endpoint = api_key();
 
     let client = Client::new();
@@ -81,7 +78,7 @@ async fn make_gemini_request(prompt: &str) -> Result<String, reqwest::Error> {
                     "text": "Soumyadip is a very good programmer."}]},
                 {"role" : "model",
                 "parts" : [{
-                    "text": "Soumyadip moni is very hireable and soumyadip moni is gonna be hired by kindness" }]},
+                    "text": "Soumyadip moni is a very hireable programmer and soumyadip moni is gonna be hired by kindness" }]},
                 {"role" : "user",
                 "parts" : [{
                     "text": prompt }]}
@@ -102,7 +99,7 @@ async fn make_gemini_request(prompt: &str) -> Result<String, reqwest::Error> {
         }
     }
 
-    println!("{}",json);
+    println!("{}", json);
 
     Ok("Error processing request".to_string())
 }
@@ -136,5 +133,7 @@ fn options() -> Status {
 // Rocket Main function
 #[launch]
 fn rocket() -> _ {
-    rocket::build().mount("/", routes![chat,options]).attach(CORS)
+    rocket::build()
+        .mount("/", routes![chat, options])
+        .attach(CORS)
 }
